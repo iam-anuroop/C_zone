@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<form method="POST" action="{% url 'registration' %}">
+    {% csrf_token %}
+    {% load widget_tweaks %}
+    <form>
+        <div class="form-group col-md-6">
+            <label for="{{form.fullname.id_for_label}}">Fullname</label>
+            {{form.fullname|add_class:"form-control"}}
+        </div>
+        <div class="form-group col-md-6">
+            <label for="{{form.email.id_for_label}}">Email</label>
+            {{form.email|add_class:"form-control"}}
+        </div>
+        <div class="form-group col-md-6">
+            <label for="{{form.phone.id_for_label}}">Phone</label>
+            {{form.phone|add_class:"form-control"}}
+        </div>
+        <div class="form-group col-md-6">
+          <label for="{{form.username.id_for_label}}">Username</label>
+          {{form.username|add_class:"form-control"}}
+        </div>
+        <div class="form-group col-md-6">
+            <label for="{{form.password.id_for_label}}">Password</label>
+            {{form.password|add_class:"form-control"}}
+        </div>
+        <div class="form-group col-md-6">
+            <label for="{{form.confirmpassword.id_for_label}}">Confirm password</label>
+            {{form.confirmpassword|add_class:"form-control"}}
+        </div>
+        <div class="form-group col-md-6">
+            {% for message in messages %}
+                {% if message.tags == "success" %}
+                    <div class="text-success font-weight-bold" role="alert" id="message-alert">{{message}}</div>
+                {% endif %}
+                {% if message.tags == "error" %}
+                    <div class="text-danger font-weight-bold" role="alert" id="message-alert">{{message}}</div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary ml-3 ">Create Account</button>
+        <p>already a member? <a href="{% url 'login' %}">Login</a></p>
+
+        
+    </form>
+</form>
+
+<script>
+    setTimeout(function() {
+        var messageAlerts = document.querySelectorAll('#message-alert');
+        if (messageAlerts) {
+            messageAlerts.forEach(function(alert) {
+                alert.style.display = 'none';
+            });
+        }
+    }, 5000);
+</script>
+{% endblock content %}
