@@ -31,10 +31,10 @@
         <div class="form-group col-md-6">
             {% for message in messages %}
                 {% if message.tags == "success" %}
-                    <div class="text-success font-weight-bold" role="alert" id="message-alert">{{message}}</div>
+                    <div class="text-success alert alert-success font-weight-bold" role="alert" id="message-alert">{{message}}</div>
                 {% endif %}
                 {% if message.tags == "error" %}
-                    <div class="text-danger font-weight-bold" role="alert" id="message-alert">{{message}}</div>
+                    <div class="text-danger alert alert-danger font-weight-bold" role="alert" id="message-alert">{{message}}</div>
                 {% endif %}
             {% endfor %}
         </div>
@@ -53,6 +53,6 @@
                 alert.style.display = 'none';
             });
         }
-    }, 5000);
+    }, 8000);
 </script>
 {% endblock content %}
