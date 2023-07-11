@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
+{% include 'navbar.html' %} 
+
 <form method="POST" action="{% url 'registration' %}">
     {% csrf_token %}
     {% load widget_tweaks %}

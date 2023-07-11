@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 
+
 {% block content %}
+
+{% include 'navbar.html' %} 
+
 
     <form method="POST">
         {% csrf_token %}
@@ -27,6 +31,8 @@
     </form>
     <p>Not a member? <a href="{% url 'registration' %}">Register</a></p>
     <p> forgot password/username? <a href="{% url 'forgotpassword' %}">Forgotpassword/username</a></p>
+    <p>Logout? <a href="{% url 'logout' %}">Logout</a></p>
+
 
 
     

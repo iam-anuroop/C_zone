@@ -9,7 +9,7 @@ from django.utils.http import urlsafe_base64_decode,urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login,logout
 
 
 
@@ -108,6 +108,7 @@ def login_view(request):
             if user is not None:
                 try:
                     login(request, user)
+                    request.session['pk'] = user.pk
                     messages.success(request, 'Login successful')
                     return redirect('login')
                 except Exception as e:
@@ -117,6 +118,14 @@ def login_view(request):
         else:
             messages.error(request,'you need to verify your email,by clicking the verification link')
     return render(request, 'account/login.html')
+
+
+
+# logout
+def logout_view(request):
+    logout(request)
+    # request.session.flush()
+    return redirect('registration')
 
 
 # forgot password first page for email
