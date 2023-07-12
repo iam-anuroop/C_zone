@@ -7,3 +7,4 @@ class HotelRegistrationForm(forms.ModelForm):
         model = HotelDetails
         exclude = ['user_id','hotel_id']    # Exclude user field as it will be set automatically
 
+

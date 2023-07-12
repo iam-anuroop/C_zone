@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-{% include 'navbar.html' %} 
+{% include 'includes/navbar.html' %} 
 
 <form method="POST" action="{% url 'registration' %}">
     {% csrf_token %}

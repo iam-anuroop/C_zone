@@ -1,9 +1,12 @@
 {% extends 'base.html' %}
-{% block content %}
-<form method='POST' action=''>
-    {% csrf_token %}
-    {{form.as_p}}
-    <button type='submit' >button</button>
 
-</form>
-{% endblock content %}
+{% block content %}
+  <form method="POST" enctype="multipart/form-data" action="{% url 'hotelregistration' %}"  >
+    {% csrf_token %}
+
+    <fieldset class="form-group">
+      {{ form.as_p }}
+    </fieldset>
+    <input type="submit" class="btn btn-success">
+  </form>
+{% endblock %}

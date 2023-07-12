@@ -15,6 +15,7 @@ class HotelDetails(models.Model):
     state = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
     pin_code = models.CharField(max_length=10)
+    hotel_profile = models.ImageField(upload_to='hotel_profile/')
     hotel_owner_name = models.CharField(max_length=255)
     hotel_owner_email = models.EmailField()
     hotel_owner_contact = models.CharField(max_length=20)
