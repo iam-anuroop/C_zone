@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Hotel_manage',
     'User_manage',
+    'Home_app',
     'widget_tweaks',
 ]
 
@@ -92,7 +93,7 @@ WSGI_APPLICATION = 'C_zone.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'c_zonedb',
+        'NAME': 'c_zonedb1',
         'USER':'postgres',
         'PASSWORD':'superuserpassword',
         'HOST':'localhost',

@@ -84,7 +84,7 @@ def activate(request, uidb64, token):
     user = UserDetails.objects.get(pk=uid)
     try:
         if user is not None and default_token_generator.check_token(user, token):
-            user.mail_activation=True
+            user.is_active=True
             user.save()
             messages.success(request, 'Account activated successfully you can now login')
             return redirect('login')
@@ -100,11 +100,11 @@ def activate(request, uidb64, token):
 # login view
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST['username']
+        email = request.POST['email']
         password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user.mail_activation == True:
-            if user is not None:
+        user = authenticate(request, email=email, password=password)
+        if user is not None :
+            if user.is_active == True:
                 try:
                     login(request, user)
                     request.session['pk'] = user.pk
@@ -113,9 +113,9 @@ def login_view(request):
                 except Exception as e:
                     messages.error(request, f"An error occurred during login: {str(e)}")
             else:
-                messages.error(request, 'Invalid username or password')
+                 messages.error(request,'you need to verify your email,by clicking the verification link') 
         else:
-            messages.error(request,'you need to verify your email,by clicking the verification link')
+            messages.error(request, 'Invalid username or password')
     return render(request, 'account/login.html')
 
 
@@ -151,34 +151,25 @@ def forgotpassword(request):
 
 
 # reset password
-def resetpasswordorusername (request, uidb64, token):
+def resetpasswordorusername(request, uidb64, token):
     if request.method=='POST':
         newvalue=request.POST['password']
         confirmnewvalue=request.POST['confirmpassword']
-        drop_down = request.POST['dropdown']
         uid = urlsafe_base64_decode(uidb64).decode()
         user = UserDetails.objects.get(pk=uid)
         try:
             if user is not None and default_token_generator.check_token(user, token):
-                if drop_down == 'username':
-                    user.username = newvalue
+                if newvalue == confirmnewvalue and len(newvalue)>4:
+                    user.mail_activation=True
+                    user.set_password(newvalue)
                     user.save()
+                    messages.success(request, 'Password changed successfully')
                     return redirect('emailnotification')
-                elif drop_down == 'password':
-                    if newvalue == confirmnewvalue and len(newvalue)>4:
-                        user.mail_activation=True
-                        user.set_password(newvalue)
-                        user.save()
-                        messages.success(request, 'Password changed successfully')
-                        return redirect('emailnotification')
-                    else:
-                        if newvalue != confirmnewvalue:
-                            messages.error(request,'password not matching')
-                        else:
-                            messages.error(request,'password length must atleast 5 characters')
                 else:
-                    messages.error(request,'Select an option username or password')
-
+                    if newvalue != confirmnewvalue:
+                        messages.error(request,'password not matching')
+                    else:
+                        messages.error(request,'password length must atleast 5 characters')
             else:
                 messages.error(request, 'Invalid activation link')
         except :

@@ -13,7 +13,7 @@ def Hotelregister(request):
     form= HotelRegistrationForm()
     # if not request.user.is_authenticated:
     #     return redirect('login')
-    if request.user =='' or request.user == None:
+    if request.user == None:
         return redirect('login')
     else:
         # user = UserDetails.objects.get(pk=user_pk)
@@ -29,6 +29,9 @@ def Hotelregister(request):
                 messages.error(request,'invalid form')
     
     return render(request,'hotel_account/hotel_reg.html',{'form': form,})
+
+
+
 
 
 

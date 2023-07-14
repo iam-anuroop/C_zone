@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+{% include 'includes/navbar.html' %} 
+
+
   <form method="POST" enctype="multipart/form-data" action="{% url 'hotelregistration' %}"  >
     {% csrf_token %}
 
@@ -9,4 +13,5 @@
     </fieldset>
     <input type="submit" class="btn btn-success">
   </form>
+  
 {% endblock %}

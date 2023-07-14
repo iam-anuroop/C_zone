@@ -2,6 +2,9 @@ from django.db import models
 from User_manage.models import UserDetails
 import uuid
 
+
+# model for creating hotels 
+
 class HotelDetails(models.Model):
     user_id = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
     hotel_id = models.CharField(primary_key=True, max_length=8, editable=False)
@@ -29,3 +32,7 @@ class HotelDetails(models.Model):
 
     def __str__(self):
         return self.hotel_name
+
+
+
+# hotel booking details with user connection model
