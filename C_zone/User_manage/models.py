@@ -36,6 +36,7 @@ class Usermanager(BaseUserManager):
         user.is_staff = True
         user.is_admin = True
         user.is_superuser = True
+        user.is_hoteluser = True
         user.save(using=self._db)
         return user
 
@@ -56,8 +57,11 @@ class UserDetails(AbstractBaseUser):
     is_admin = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    is_hoteluser = models.BooleanField(default=False)
+
 
     USERNAME_FIELD = 'email'
+    
     REQUIRED_FIELDS = ['username','fullname']
 
     objects = Usermanager()

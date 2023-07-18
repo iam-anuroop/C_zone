@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+ {% block content %}
+ <form method="POST">
+    {% csrf_token %}
+    <input placeholder="hotel email" name="email"/>
+    <input placeholder="password" name="password"/>
+    <button type='submit'>submit</button>
+ </form>
+ <p><a href='{% url 'hotellogout' %}'>logout hotel</a></p>
+ {% endblock content %}
+

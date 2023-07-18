@@ -16,6 +16,7 @@ from django.contrib.auth import authenticate, login,logout
 #user registration
 def register(request):
     if request.method == 'POST':
+        
         form = UserRegistrationForm(request.POST)
         uname = request.POST.get('username')
         if UserDetails.objects.filter(username=uname).exists():
@@ -115,7 +116,11 @@ def login_view(request):
             else:
                  messages.error(request,'you need to verify your email,by clicking the verification link') 
         else:
-            messages.error(request, 'Invalid username or password')
+            noactive_user = UserDetails.objects.get(email=email)
+            if noactive_user:
+                messages.error(request, 'Activate your mail before login')
+            else:
+                messages.error(request, 'Invalid username or password')
     return render(request, 'account/login.html')
 
 

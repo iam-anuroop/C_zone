@@ -1,10 +1,14 @@
 # forms.py
 from django import forms
-from .models import HotelDetails
+from .models import HotelDetails , Roomtype
 
 class HotelRegistrationForm(forms.ModelForm):
     class Meta:
         model = HotelDetails
-        exclude = ['user_id','hotel_id']    # Exclude user field as it will be set automatically
+        exclude = ['user_id','is_active','is_hoteluser']    # Exclude user field as it will be set automatically
 
 
+class Roomtypeform(forms.ModelForm):
+    class Meta:
+        model = Roomtype
+        fields = ['roomtype', 'description', 'capacity', 'price', 'photo']

@@ -7,9 +7,25 @@
 
   <form method="POST" enctype="multipart/form-data" action="{% url 'hotelregistration' %}"  >
     {% csrf_token %}
+    {% load widget_tweaks %}
 
     <fieldset class="form-group">
-      {{ form.as_p }}
+      {{ form.hotel_name|attr:'placeholder:hotelname' }}
+      {{ form.hotel_email|attr:'placeholder:hotelemail' }}
+      {{ form.hotel_registration_number|attr:'placeholder:hotel reg no' }}
+      {{ form.hotel_contact_number|attr:'placeholder:hotel contact' }}
+      {{ form.hotel_address|attr:'placeholder:hoteladdress' }}
+      {{ form.password|attr:'placeholder:hotel password' }}
+      {{ form.hotel_location|attr:'placeholder:hotel location' }}
+      {{ form.district|attr:'placeholder:hotel district' }}
+      {{ form.state|attr:'placeholder:hotel state' }}
+      {{ form.city|attr:'placeholder:hotel city' }}
+      {{ form.pin_code|attr:'placeholder:hotel pin code' }}
+      {{ form.hotel_profile|attr:'placeholder:hotel profile' }}
+      {{ form.hotel_owner_name|attr:'placeholder:hotel owner name' }}
+      {{ form.hotel_owner_email|attr:'placeholder:hotel owner email' }}
+      {{ form.hotel_owner_contact|attr:'placeholder:hotel owner contact' }}
+      {{ form.hotel_owner_address|attr:'placeholder:hotel owner address' }}
     </fieldset>
     <input type="submit" class="btn btn-success">
   </form>

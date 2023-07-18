@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+<h1>room details</h1>
+
+<form method="POST"  enctype="multipart/form-data" >
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create Room Type</button>
+</form>
+
+{% for data in datas %}
+
+<p>{{data.roomtype}}</p>
+
+{% endfor %}
+
+{% endblock content %}
