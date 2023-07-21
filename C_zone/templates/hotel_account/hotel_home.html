@@ -3,5 +3,9 @@
 
 <h1>this is hotel home</h1>
 <h3>update room details<a href={% url 'roomtypeupdate' %} >updatte</a></h3>
+{% for book in bookings %}
+    <h3>{{book.booking_id}}</h3>
+    <h3>{{book.name}}</h3>
+{% endfor %}
 
 {% endblock content %}

@@ -1,8 +1,8 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .Hotel_form import HotelRegistrationForm  , Roomtypeform
+from .Hotel_form import HotelRegistrationForm  , Roomtypeform ,Bookingform,Hotelownerform
 from django.contrib.auth.decorators import login_required
 from User_manage.models import UserDetails
-from .models import HotelDetails , Roomtype
+from .models import HotelDetails , Roomtype ,BookingDetails
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.hashers import check_password
@@ -18,7 +18,6 @@ from django.core.mail import EmailMessage
 # hotel registration
 @login_required(login_url='login')
 def Hotelregister(request):
-    form= HotelRegistrationForm()
     if request.user == None:
         return redirect('login')
     else:
@@ -34,12 +33,15 @@ def Hotelregister(request):
                 hotel.set_password(password)
                 user.save()
                 hotel.save()
+                request.session['hotel_id']=hotel.id
+
+
                 try:
                     current_site = get_current_site(request)
                     mail_subject = "Please activate your account"
                     message = render_to_string("hotel_account/email_verify.html", {
-                        'user': user,
-                        'hotel':hotel,
+                        'user': request.user,
+                        # 'hotel':hotel,
                         'domain': current_site.domain,
                         'uid': urlsafe_base64_encode(force_bytes(hotel.pk)),
                         'token': default_token_generator.make_token(hotel),
@@ -47,20 +49,38 @@ def Hotelregister(request):
                     to_email = email
                     send_mail = EmailMessage(mail_subject, message, to=[to_email])
                     send_mail.send()
-                    user.save()
-                    return redirect('emailnotification')
+
+                    return redirect('hotelowner_reg')
                 except Exception as e:
                     messages.error(request, f"An error occurred during registration: {str(e)}")
 
                 # logout(request) #making the user logout 
     
-                return redirect('hotellogin')
+                return redirect('hotelowner_reg')
             else:
                 messages.error(request,'invalid form')
-    
+        else:
+            form= HotelRegistrationForm()
+            
     return render(request,'hotel_account/hotel_reg.html',{'form': form,})
 
 
+# hotel regostration second part owner details 
+def ownerregistration(request):
+    hotel_id = request.session.get('hotel_id')
+    hotel = HotelDetails.objects.get(id=hotel_id)
+    if request.method == 'POST':
+        form = Hotelownerform(request.POST, request.FILES)
+        if form.is_valid():
+            owner=form.save(commit=False)
+            hotel.is_registerd = True
+            hotel.save()
+            owner.hotel_id = hotel
+            owner.save()
+            return redirect('emailnotification')  
+    else:
+        form = Hotelownerform()
+    return render(request,'hotel_account/hotel_owner.html',{'form':form})
 
 
 #email activation for hotel account
@@ -79,7 +99,7 @@ def activatehotel(request, uidb64, token):
             messages.error(request, 'Invalid activation link')
     except :
         messages.error(request, 'Invalid activation link')
-    return redirect('hotelregistration')
+    return redirect('hotellogin')
 
 
 
@@ -91,18 +111,31 @@ def Hotellogin(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
         print(email, password)
-        
         try:
+            # print('j')
             hotel = HotelDetails.objects.get(hotel_email=email)
-            if check_password(password, hotel.password) and hotel.is_active==True:  # Manually check the password
+            if check_password(password, hotel.password) and hotel.is_active==True and hotel.is_registerd ==True:  # Manually check the password
                 print('Password matched!')
                 hotel.is_logined = True
                 hotel.save()
                 request.session['hotel_id'] = hotel.id
                 return redirect('hotelhome')
             else:
+                # is registered
+                if hotel.is_registerd == False:
+                    messages.error(request,'you need to add owner details')
+                    return redirect('hotelowner_reg')
+                # hotelactiavte
+                elif hotel.is_active == False:
+                    messages.error(request,'Verify you account through the verification link')
+                else:
+                    messages.error(request,'Incorrect password')
+                
                 print('Invalid password.')
+                return redirect('hotellogin')
         except HotelDetails.DoesNotExist:
+            # print(hotel)
+
             print('User not found.')
             
     return render(request, 'hotel_account/hotel_login.html')
@@ -118,7 +151,8 @@ def Hotelhome(request):
         try:
             hotel = HotelDetails.objects.get(id=hotel_id)
             if hotel.is_logined:
-                return render(request, 'hotel_account/hotel_home.html')
+                bookings = BookingDetails.objects.filter(hotel = hotel_id)
+                return render(request, 'hotel_account/hotel_home.html',{'bookings':bookings})
             else:
                 messages.error(request, 'You need to log in first')
                 return redirect('hotellogin')
@@ -128,6 +162,8 @@ def Hotelhome(request):
     else:
         messages.error(request, 'You need to log in first')
         return redirect('hotellogin')
+
+
 
 
 
@@ -178,10 +214,21 @@ def Roomtype_view(request):
 
 
 def hotel_book(request,hotel_id):
-
     hotel = get_object_or_404(HotelDetails, id=hotel_id)
     rooms = Roomtype.objects.filter(hotel_id=hotel_id)
+    if request.method == 'POST':
+        form =Bookingform(request.POST,request.FILES)
 
+        # Save the booking data to the database
+        if form.is_valid():
+            booking = form.save(commit=False)
+            booking.hotel = hotel
+            booking.user = request.user  # Assuming the user is authenticated
+            booking.save()
+
+        # booking.save()
+
+    # form = Bookingform()
     return render(request,'pages/hotelbook.html',{'hotel':hotel,'rooms':rooms})
 
     # hotel_name = form.cleaned_data['hotel_name']

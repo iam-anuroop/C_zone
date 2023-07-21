@@ -22,9 +22,11 @@
           <a class="nav-link" href="#">Disabled</a>
         </li>
       </ul>
-      <form class="form-inline my-2 my-lg-0">
-        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+      <form class="form-inline my-2 my-lg-0" action='{% url 'search' %}'>
+        <input class="form-control mr-sm-2" name="search" type="search" placeholder="Search" aria-label="Search">
         <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+      </form>
+      <form class="form-inline my-2 my-lg-0">
         <a href='{% url 'registration' %}'><i class="fa-solid fa-user pl-4 pr-3 "></i></a>
         <i class="openbtn fa-solid fa-ellipsis-vertical pl-3 pr-3"  onclick="openNav()"></i>
       </form>
@@ -87,7 +89,7 @@
     
     <div id="mySidepanel" class="sidepanel">
       <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
-      <a href="#">About</a>
+      <a href="">Profile</a>
       <a href="#">Services</a>
       <a href="#">Clients</a>
       <a href="#">Contact</a>

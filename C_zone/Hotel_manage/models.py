@@ -29,10 +29,6 @@ class HotelDetails(AbstractBaseUser):
     city = models.CharField(max_length=255)
     pin_code = models.CharField(max_length=10)
     hotel_profile = models.ImageField(upload_to='hotel_profile/')
-    hotel_owner_name = models.CharField(max_length=255)
-    hotel_owner_email = models.EmailField()
-    hotel_owner_contact = models.CharField(max_length=20)
-    hotel_owner_address = models.CharField(max_length=255)
 
 
 
@@ -40,7 +36,7 @@ class HotelDetails(AbstractBaseUser):
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now_add=True)
     is_logined = models.BooleanField(default=False)
-
+    is_registerd = models.BooleanField(default=False)
 
 
     USERNAME_FIELD = 'hotel_email'
@@ -50,6 +46,16 @@ class HotelDetails(AbstractBaseUser):
 
     def __str__(self):
         return self.hotel_name
+
+
+# Hotelowner details 
+class Hotelowner(models.Model):
+    hotel_id = models.ForeignKey(HotelDetails,on_delete=models.CASCADE)
+    owner_name = models.CharField(max_length=255)
+    owner_email = models.EmailField()
+    owner_contact = models.CharField(max_length=20)
+    owner_address = models.CharField(max_length=255)
+    id_card = models.ImageField(upload_to='hotelowner_idcard/')
 
 
 
@@ -76,7 +82,12 @@ class BookingDetails(models.Model):
     hotel = models.ForeignKey(HotelDetails, on_delete=models.CASCADE)
     check_in_date = models.DateField()
     check_out_date = models.DateField()
+    room_type = models.CharField(max_length=150)
     num_of_guests = models.IntegerField()
+    special_requests = models.TextField()
+    name = models.CharField(max_length=100)
+    id_card = models.ImageField(upload_to='roomuser_idcard/')
+
 
 
     is_paid = models.BooleanField(default=False)

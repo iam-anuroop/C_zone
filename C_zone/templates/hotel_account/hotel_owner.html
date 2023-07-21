@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'includes/navbar.html' %}
+
+<h1>Hotel Owner Details</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Save">
+    </form>
+
+{% endblock content %}
