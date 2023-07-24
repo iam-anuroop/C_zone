@@ -1,8 +1,8 @@
-from django.shortcuts import render,redirect,get_object_or_404
+from django.shortcuts import render,redirect,get_object_or_404,HttpResponse
 from .Hotel_form import HotelRegistrationForm  , Roomtypeform ,Bookingform,Hotelownerform
 from django.contrib.auth.decorators import login_required
 from User_manage.models import UserDetails
-from .models import HotelDetails , Roomtype ,BookingDetails
+from .models import HotelDetails , Roomtype ,BookingDetails ,PaymentDetails
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.hashers import check_password
@@ -12,6 +12,8 @@ from django.utils.http import urlsafe_base64_decode,urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
+import os
+import razorpay
 # Create your views here.
 
 
@@ -58,6 +60,7 @@ def Hotelregister(request):
     
                 return redirect('hotelowner_reg')
             else:
+                print(form.errors)
                 messages.error(request,'invalid form')
         else:
             form= HotelRegistrationForm()
@@ -68,18 +71,31 @@ def Hotelregister(request):
 # hotel regostration second part owner details 
 def ownerregistration(request):
     hotel_id = request.session.get('hotel_id')
-    hotel = HotelDetails.objects.get(id=hotel_id)
-    if request.method == 'POST':
-        form = Hotelownerform(request.POST, request.FILES)
-        if form.is_valid():
-            owner=form.save(commit=False)
-            hotel.is_registerd = True
-            hotel.save()
-            owner.hotel_id = hotel
-            owner.save()
-            return redirect('emailnotification')  
-    else:
-        form = Hotelownerform()
+    hotel_email = request.session.get('hotel_email')
+    try:
+        hotel = HotelDetails.objects.get(id=hotel_id)
+        if request.method == 'POST':
+            form = Hotelownerform(request.POST, request.FILES)
+            if form.is_valid():
+                owner=form.save(commit=False)
+                hotel.is_registerd = True
+                hotel.save()
+                owner.hotel_id = hotel
+                owner.save()
+                return redirect('emailnotification')  
+        else:
+            form = Hotelownerform()
+    except:
+        try:
+            hotel = HotelDetails.objects.get(hotel_email=hotel_email)
+            hotel.delete()
+            messages.error(request,'You need to register once again')
+            return redirect('hotelregistration')
+        except:
+            messages.error(request,'You need to register once again')
+            return redirect('hotelregistration')
+
+    form = Hotelownerform()
     return render(request,'hotel_account/hotel_owner.html',{'form':form})
 
 
@@ -112,7 +128,6 @@ def Hotellogin(request):
         password = request.POST.get('password')
         print(email, password)
         try:
-            # print('j')
             hotel = HotelDetails.objects.get(hotel_email=email)
             if check_password(password, hotel.password) and hotel.is_active==True and hotel.is_registerd ==True:  # Manually check the password
                 print('Password matched!')
@@ -124,6 +139,7 @@ def Hotellogin(request):
                 # is registered
                 if hotel.is_registerd == False:
                     messages.error(request,'you need to add owner details')
+                    request.session['hotel_email']=hotel.hotel_email
                     return redirect('hotelowner_reg')
                 # hotelactiavte
                 elif hotel.is_active == False:
@@ -151,8 +167,9 @@ def Hotelhome(request):
         try:
             hotel = HotelDetails.objects.get(id=hotel_id)
             if hotel.is_logined:
-                bookings = BookingDetails.objects.filter(hotel = hotel_id)
-                return render(request, 'hotel_account/hotel_home.html',{'bookings':bookings})
+                paid_bookings = BookingDetails.objects.filter(hotel = hotel_id,is_paid = True)
+                bookings = BookingDetails.objects.filter(hotel = hotel_id,is_paid = False)
+                return render(request, 'hotel_account/hotel_home.html',{'paid_bookings':paid_bookings , 'bookings':bookings  })
             else:
                 messages.error(request, 'You need to log in first')
                 return redirect('hotellogin')
@@ -180,6 +197,7 @@ def Hotellogout(request):
     return redirect('hotellogin')
 
 # room type 
+@login_required(login_url='login')
 def Roomtype_view(request):
     hotel_id = request.session.get('hotel_id')
     if hotel_id is None:
@@ -211,11 +229,24 @@ def Roomtype_view(request):
 
 
 
-
-
-def hotel_book(request,hotel_id):
+# hotel_rooms and price page view
+@login_required(login_url='login')
+def Hotel_rooms_view(request,hotel_id):
     hotel = get_object_or_404(HotelDetails, id=hotel_id)
     rooms = Roomtype.objects.filter(hotel_id=hotel_id)
+    print(hotel)
+    print(rooms)
+    return render(request,'pages/hotel_rooms.html',{'rooms':rooms , 'hotel':hotel})
+
+
+
+
+# booking form view
+@login_required(login_url='login')
+def hotel_book(request,hotel_id,room_id):
+    hotel = get_object_or_404(HotelDetails, id=hotel_id)
+    room = get_object_or_404(Roomtype, id=room_id)
+    print(hotel,room)
     if request.method == 'POST':
         form =Bookingform(request.POST,request.FILES)
 
@@ -223,13 +254,86 @@ def hotel_book(request,hotel_id):
         if form.is_valid():
             booking = form.save(commit=False)
             booking.hotel = hotel
+            booking.room_type = room.roomtype
             booking.user = request.user  # Assuming the user is authenticated
             booking.save()
-
+            return redirect('payment',booking_id=booking.id,room_id=room.id)
+        else:
+            print(form.errors,'jjjjjjjjjjjjjjjjj')
         # booking.save()
 
     # form = Bookingform()
-    return render(request,'pages/hotelbook.html',{'hotel':hotel,'rooms':rooms})
+    return render(request,'pages/hotelbook.html',{'hotel':hotel,'room':room})
+
+
+
+from django.conf import settings
+# payment metho view 
+def Payment_view (request,booking_id=0,room_id=0):
+    print(booking_id)
+    print(room_id)
+    booking = get_object_or_404(BookingDetails,id=booking_id)
+    room = get_object_or_404(Roomtype, id=room_id)
+
+
+    grand_total = 0
+    total = booking.room_count*room.price
+    
+    tax = (2 * total)/100
+    grand_total = total + tax
+
+    client = razorpay.Client(auth=(settings.RAZOR_KEY_ID,settings.RAZOR_KEY_SECRET))
+    payment = client.order.create({'amount':int(grand_total)*100 , 'currency':'INR' , 'payment_capture':1 })
+    key_id = settings.RAZOR_KEY_ID
+
+   
+
+    context = {
+        'grand_total':grand_total,
+        'payment':payment,
+        'booking_id':booking_id,
+        'room_id':room_id
+    }
+
+    return render(request,'pages/payment.html',context)
+
+
+
+def success(request):
+    razorpay_payment_id = request.GET.get('razorpay_payment_id')
+    booking_id = request.GET.get('booking_id')
+    room_id = request.GET.get('room_id')
+    booking = get_object_or_404(BookingDetails,id=booking_id)
+    print(room_id,booking_id,razorpay_payment_id)
+
+
+    client = razorpay.Client(auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
+
+
+    try:
+        payment = client.payment.fetch(razorpay_payment_id)
+
+        amount_paid = payment['amount'] / 100  # Amount is in paise, so convert to rupees
+        razor_pay_status = payment['status']
+        print(razor_pay_status,amount_paid)
+
+        PaymentDetails.objects.create(
+            razor_payment_id=razorpay_payment_id,
+            user=booking.user,  # Assuming the booking has a ForeignKey to the user
+            hotel=booking.hotel,
+            amount_paid=amount_paid,
+            razor_pay_status=razor_pay_status
+        )
+        booking.is_paid = True
+        booking.save()
+
+    except razorpay.errors.BadRequestError as e:
+        return HttpResponse(f'Error: {str(e)}')
+
+
+    
+    return HttpResponse('payment success')
+
 
     # hotel_name = form.cleaned_data['hotel_name']
     # hotel_email = form.cleaned_data['hotel_email']
@@ -245,3 +349,17 @@ def hotel_book(request,hotel_id):
     # hotel_owner_email = form.cleaned_data['hotel_owner_email']
     # hotel_owner_contact = form.cleaned_data['hotel_owner_contact']
     # hotel_owner_address = form.cleaned_data['hotel_owner_address']
+
+     # if request.method == 'POST':
+    #     print('jjjjjjj')
+    #     razor_payment_id = request.POST.get('razor_payment_id')  
+
+    #     payment_details = PaymentDetails.objects.create(
+    #         razor_payment_id=razor_payment_id,
+    #         user=request.user,
+    #         hotel=booking.hotel,
+    #         amount_paid=str(grand_total),
+    #         # razor_pay_status='Success',  # You can set this based on your payment response
+    #     )
+    #     payment_details.save()
+

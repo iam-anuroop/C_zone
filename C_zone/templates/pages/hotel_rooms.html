@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include  'includes/navbar.html' %}
+
+
+<div class='Container'>
+    <h1>Rooms of Hotel {{hotel.hotel_name}}</h1>
+{% for room in rooms %}
+    <div class="card d-inline-flex shadow p-2 m-3 bg-white rounded" style="width: 18rem;">
+        <img class="card-img-top" src="{{ MEDIA_URL }}{{ room.photo.url }}" alt="Card image cap">
+        <div class="card-body">
+          <h5 class="card-title">{{ room.roomtype }}</h5>
+          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+          <h3>{{ room.price }}</h3>
+          <a href="{% url 'hotelbook' hotel_id=hotel.id room_id=room.id %}" class="btn btn-primary">Book</a>
+        </div>
+      </div>
+{% endfor %}
+</div>
+
+
+
+{% endblock content %}

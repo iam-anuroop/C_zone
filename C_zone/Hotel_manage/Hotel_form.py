@@ -22,4 +22,4 @@ class Roomtypeform(forms.ModelForm):
 class Bookingform(forms.ModelForm):
     class Meta:
         model =  BookingDetails
-        exclude = ['booking_id','user','hotel','is_paid','is_advancepaid']
+        exclude = ['booking_id','user','hotel','is_paid','is_advancepaid','room_type']

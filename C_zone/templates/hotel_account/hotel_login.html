@@ -7,5 +7,30 @@
     <button type='submit'>submit</button>
  </form>
  <p><a href='{% url 'hotellogout' %}'>logout hotel</a></p>
+ <div class="form-group col-md-6">
+   {% for message in messages %}
+       {% if message.tags == "success" %}
+           <div class="text-success alert alert-success font-weight-bold" role="alert" id="message-alert">{{message}}</div>
+       {% endif %}
+       {% if message.tags == "error" %}
+           <div class="text-danger alert alert-danger font-weight-bold" role="alert" id="message-alert">{{message}}</div>
+       {% endif %}
+   {% endfor %}
+</div>
+
+<p>Register your hotel <a href='{% url 'hotelregistration' %}'> Click here to register</a></p>
+
+
+<script>
+   setTimeout(function() {
+       var messageAlerts = document.querySelectorAll('#message-alert');
+       if (messageAlerts) {
+           messageAlerts.forEach(function(alert) {
+               alert.style.display = 'none';
+           });
+       }
+   }, 8000);
+</script>
+
  {% endblock content %}
 

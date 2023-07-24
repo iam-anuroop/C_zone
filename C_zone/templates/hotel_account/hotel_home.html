@@ -1,11 +1,45 @@
 {% extends 'base.html' %}
 {% block content %}
-
+<div>
 <h1>this is hotel home</h1>
 <h3>update room details<a href={% url 'roomtypeupdate' %} >updatte</a></h3>
-{% for book in bookings %}
-    <h3>{{book.booking_id}}</h3>
-    <h3>{{book.name}}</h3>
+</div>
+<table class='table'>
+    <tr columnspan='3'>
+        <th>Paid Bookings</th>
+    </tr>
+    <tr>
+        <th>Customer</th>
+        <th>book id</th>
+        <th>Check in</th>
+        <th>Check out</th>
+    </tr>
+{% for paid_book in paid_bookings %}
+    <tr>
+        <td>{{paid_book.name}}</td>
+        <td>{{paid_book.booking_id}}</td>
+        <td>{{paid_book.check_in_date}}</td>
+        <td>{{paid_book.check_out_date}}</td>
+    </tr>
 {% endfor %}
-
+</table>
+<table class='table'>
+    <tr columnspan='3'>
+        <th>Unpaid Bookings</th>
+    </tr>
+    <tr>
+        <th>Customer</th>
+        <th>book id</th>
+        <th>Check in</th>
+        <th>Check out</th>
+    </tr>
+{% for book in bookings %}
+    <tr>
+        <td>{{book.name}}</td>
+        <td>{{book.booking_id}}</td>
+        <td>{{book.check_in_date}}</td>
+        <td>{{book.check_out_date}}</td>
+    </tr>
+{% endfor %}
+</table>
 {% endblock content %}

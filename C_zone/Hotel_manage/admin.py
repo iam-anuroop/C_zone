@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import HotelDetails,Roomtype,BookingDetails,Hotelowner
+from .models import HotelDetails,Roomtype,BookingDetails,Hotelowner,PaymentDetails
 
 # Register your models here.
 
@@ -19,3 +19,7 @@ admin.site.register(Roomtype,RoomtypeAdmin)
 class BookingAdmin(admin.ModelAdmin):
     list_display = ('booking_id','user','hotel','room_type','check_in_date','check_out_date')
 admin.site.register(BookingDetails,BookingAdmin)
+
+class PaymentDetailsAdmin(admin.ModelAdmin):
+    list_display = ('id','hotel','user','amount_paid')
+admin.site.register(PaymentDetails,PaymentDetailsAdmin)

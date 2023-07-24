@@ -110,17 +110,25 @@ def login_view(request):
                     login(request, user)
                     request.session['pk'] = user.pk
                     messages.success(request, 'Login successful')
-                    return redirect('login')
+                    return redirect('home')
                 except Exception as e:
                     messages.error(request, f"An error occurred during login: {str(e)}")
             else:
                  messages.error(request,'you need to verify your email,by clicking the verification link') 
         else:
-            noactive_user = UserDetails.objects.get(email=email)
-            if noactive_user:
-                messages.error(request, 'Activate your mail before login')
-            else:
-                messages.error(request, 'Invalid username or password')
+            try:
+                noactive_user = UserDetails.objects.get(email=email)
+                print(noactive_user)
+
+                if noactive_user:
+                    if noactive_user.is_active == False:
+                        messages.error(request, 'Activate your email')
+                    else:
+                        messages.error(request, 'Invalid username or password')
+                else:
+                    messages.error(request, 'This Email doesnt have an account please register')
+            except:
+                messages.error(request,'Something went wrong')
     return render(request, 'account/login.html')
 
 

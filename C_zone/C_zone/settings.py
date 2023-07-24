@@ -171,3 +171,8 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
+
+
+# Razorpay key details 
+RAZOR_KEY_ID = os.getenv('razor_key_id')
+RAZOR_KEY_SECRET = os.getenv('razor_key_secret')

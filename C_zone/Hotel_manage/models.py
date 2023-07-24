@@ -37,6 +37,7 @@ class HotelDetails(AbstractBaseUser):
     last_login = models.DateTimeField(auto_now_add=True)
     is_logined = models.BooleanField(default=False)
     is_registerd = models.BooleanField(default=False)
+    is_account_add = models.BooleanField(default=False)
 
 
     USERNAME_FIELD = 'hotel_email'
@@ -46,6 +47,11 @@ class HotelDetails(AbstractBaseUser):
 
     def __str__(self):
         return self.hotel_name
+
+
+
+# Bankaccounts details 
+
 
 
 # Hotelowner details 
@@ -74,6 +80,21 @@ class Roomtype(models.Model):
         return self.roomtype
 
 
+# payment ...details 
+class PaymentDetails(models.Model):
+    razor_payment_id = models.CharField(max_length=255)
+    user = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
+    hotel = models.ForeignKey(HotelDetails, on_delete=models.CASCADE)
+    amount_paid = models.CharField(max_length=100) # this is the total amount
+    razor_pay_status = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return str(self.razor_payment_id)
+
+
+
 
 # booking details table
 class BookingDetails(models.Model):
@@ -83,23 +104,19 @@ class BookingDetails(models.Model):
     check_in_date = models.DateField()
     check_out_date = models.DateField()
     room_type = models.CharField(max_length=150)
+    room_count = models.IntegerField()
     num_of_guests = models.IntegerField()
     special_requests = models.TextField()
     name = models.CharField(max_length=100)
     id_card = models.ImageField(upload_to='roomuser_idcard/')
 
 
-
     is_paid = models.BooleanField(default=False)
-    is_advancepaid = models.BooleanField(default=False)
     
-
-
-    
-
-    def short_booking_id(self):
-        return str(self.booking_id)[:8]
 
     def __str__(self):
         return str(self.booking_id)
+
+
+
 

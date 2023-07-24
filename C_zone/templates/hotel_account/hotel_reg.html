@@ -23,7 +23,32 @@
       {{ form.pin_code|attr:'placeholder:hotel pin code' }}
       {{ form.hotel_profile|attr:'placeholder:hotel profile' }}
     </fieldset>
+
+    <div class="form-group col-md-6">
+      {% for message in messages %}
+          {% if message.tags == "success" %}
+              <div class="text-success alert alert-success font-weight-bold" role="alert" id="message-alert">{{message}}</div>
+          {% endif %}
+          {% if message.tags == "error" %}
+              <div class="text-danger alert alert-danger font-weight-bold" role="alert" id="message-alert">{{message}}</div>
+          {% endif %}
+      {% endfor %}
+  </div>
+
     <button type="submit" class="btn btn-success">Continue</button>
   </form>
+<p>Manage your hotel <a href='{% url 'hotellogin' %}'> Click here to login</a></p>
   
+
+  <script>
+    setTimeout(function() {
+        var messageAlerts = document.querySelectorAll('#message-alert');
+        if (messageAlerts) {
+            messageAlerts.forEach(function(alert) {
+                alert.style.display = 'none';
+            });
+        }
+    }, 8000);
+</script>
+
 {% endblock %}
