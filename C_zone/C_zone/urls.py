@@ -20,6 +20,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    path('admin_panel/',include('Admin_panel.a_urls')),
     path('user/',include('User_manage.u_urls')),
     path('hotel/',include('Hotel_manage.h_urls')),
     path('',include('Home_app.urls')),

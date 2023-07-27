@@ -37,7 +37,7 @@ class HotelDetails(AbstractBaseUser):
     last_login = models.DateTimeField(auto_now_add=True)
     is_logined = models.BooleanField(default=False)
     is_registerd = models.BooleanField(default=False)
-    is_account_add = models.BooleanField(default=False)
+    is_confirmed = models.BooleanField(default=False)
 
 
     USERNAME_FIELD = 'hotel_email'
@@ -103,7 +103,7 @@ class BookingDetails(models.Model):
     hotel = models.ForeignKey(HotelDetails, on_delete=models.CASCADE)
     check_in_date = models.DateField()
     check_out_date = models.DateField()
-    room_type = models.CharField(max_length=150)
+    room_type = models.ForeignKey(Roomtype,on_delete=models.SET_NULL,null=True)
     room_count = models.IntegerField()
     num_of_guests = models.IntegerField()
     special_requests = models.TextField()

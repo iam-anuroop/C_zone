@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'Hotel_manage',
     'User_manage',
     'Home_app',
+    'Admin_panel',
     'widget_tweaks',
 ]
 

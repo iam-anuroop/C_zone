@@ -1,15 +1,23 @@
-from django.shortcuts import render, redirect 
+from django.shortcuts import render, redirect ,get_object_or_404 ,HttpResponse 
 from .registration_form import UserRegistrationForm
 from .models import UserDetails
+from Hotel_manage.models import BookingDetails
 from django.contrib import messages
 import re
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_decode,urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_decode,urlsafe_base64_encode 
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 from django.contrib.auth import authenticate, login,logout
+
+# for invoice download 
+from io import BytesIO
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.conf import settings
+
 
 
 
@@ -74,6 +82,7 @@ def register(request):
 
 # email notification
 def emailnotification(request):
+
 
     return render(request,'account/emailnotification.html')
 
@@ -188,5 +197,107 @@ def resetpasswordorusername(request, uidb64, token):
         except :
             messages.error(request, 'Invalid activation link')
     return render(request,'account/resetpassword.html')
+
+
+
+# bookings with out payment to show on kart
+def Your_bookings(request):
+
+    your_book = BookingDetails.objects.filter(user = request.user,is_paid =False)
+
+    return render(request,'pages/your_bookings.html',{'books':your_book})
+
+
+
+
+# # invoice data generator
+# def generate_invoice_data(booking):
+#     return
+
+
+# # invoice download option for payed bookings 
+# def invoice_view(request,booking_id):
+
+#     booking = get_object_or_404(BookingDetails,id = booking_id)
+#     invoice_data = generate_invoice_data(booking)
+
+
+#     template = get_template('invoice/invoice.html')
+#     context = {'invoice_data': invoice_data}
+#     rendered_template = template.render(context)
+
+#     response = BytesIO()
+#     pdf = pisa.pisaDocument(BytesIO(rendered_template.encode('UTF-8')), response)  
+#     filename = 'c_zone invoice{booking.id}}'
+
+
+#     try:
+#         with open(str(settings.BASE_DIR)+f"invoice_location/{filename}.pdf", 'wb+') as 
+#         pdf = pisa.pisaDocument(BytesIO(rendered_template.))
+
+#     except:
+#         return
+
+#     response = HttpResponse(content_type='application/pdf')
+#     response['Content-Disposition'] = f'attachment; filename="invoice_{booking_id}.pdf"'
+
+#     # response.write(pdf_data)
+
+#     return response
+
+
+
+
+
+
+#user profile crud operation for updating and deleting their account 
+def Profileupdate(request):
+    user = request.user
+    if request.method == 'POST':
+        fullname = request.POST.get('fullname')
+        username = request.POST.get('username')
+        # email activation mail for verify the mail ath cheyyanam
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+
+        if not re.match(r'^[A-Za-z]', username):
+            messages.error(request, 'Username must start with an alphabet')
+        elif len(username) < 5:
+            messages.error(request, 'Username must contain at least 5 characters')
+        elif not re.match(r'^[0-9]{10}$', phone):
+            messages.error(request, 'Invalid phone number')
+        elif email != user.email:
+            user.is_active = False
+            user.save()
+            current_site = get_current_site(request)
+            mail_subject = "Please activate your account"
+            message = render_to_string("account/email_verify.html", {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': default_token_generator.make_token(user),
+            })
+            to_email = email
+            send_mail = EmailMessage(mail_subject, message, to=[to_email])
+            send_mail.send()
+        else :
+            user.fullname = fullname
+            user.username = username
+            user.email = email
+            user.phone = phone
+            user.save()
+    return render(request,'account/userprofile.html',{'user':user})
+
+
+
+
+# delete user account 
+def Userdelete(request):
+    print(request.user)
+    user = request.user
+    user.delete()
+    return render(request,'account/userprofile.html')
+
+
 
 # Create your views here.

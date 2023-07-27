@@ -9,4 +9,8 @@ urlpatterns = [
     path('emailnotification',views.emailnotification,name='emailnotification'),
     path('resetpassword/<uidb64>/<token>/',views.resetpasswordorusername,name='resetpassword'),
     path('forgotpassword/',views.forgotpassword,name='forgotpassword'),
+    path('userprofile/',views.Profileupdate,name='userprofile'),
+    path('userdelete/',views.Userdelete,name='userdelete'),
+    path('yourbookings/',views.Your_bookings,name='yourbookings'),
+
     ]

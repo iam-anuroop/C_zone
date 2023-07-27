@@ -3,6 +3,7 @@ from .Hotel_form import HotelRegistrationForm  , Roomtypeform ,Bookingform,Hotel
 from django.contrib.auth.decorators import login_required
 from User_manage.models import UserDetails
 from .models import HotelDetails , Roomtype ,BookingDetails ,PaymentDetails
+from Admin_panel.models import Hotel_income
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.hashers import check_password
@@ -14,6 +15,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 import os
 import razorpay
+from datetime import date
 # Create your views here.
 
 
@@ -251,13 +253,18 @@ def hotel_book(request,hotel_id,room_id):
         form =Bookingform(request.POST,request.FILES)
 
         # Save the booking data to the database
+        
         if form.is_valid():
             booking = form.save(commit=False)
             booking.hotel = hotel
-            booking.room_type = room.roomtype
+            booking.room_type = room
             booking.user = request.user  # Assuming the user is authenticated
-            booking.save()
-            return redirect('payment',booking_id=booking.id,room_id=room.id)
+            if booking.check_in_date > date.today() and booking.check_in_date < booking.check_out_date:
+                booking.save()
+                return redirect('payment',booking_id=booking.id,room_id=room.id)
+            else:
+                messages.error(request,'Choose a proper date')
+            
         else:
             print(form.errors,'jjjjjjjjjjjjjjjjj')
         # booking.save()
@@ -326,6 +333,24 @@ def success(request):
         )
         booking.is_paid = True
         booking.save()
+
+        if Hotel_income.objects.filter(hotel=booking.hotel).exists():
+            try:
+                hotel_pay = get_object_or_404(Hotel_income,hotel=booking.hotel)
+                hotel_pay.total_bookings = int(hotel_pay.total_bookings) + int(1)
+                hotel_pay.pending_payment = float(hotel_pay.pending_payment) + float(amount_paid)
+                hotel_pay.save()
+            except Exception as e:
+                return HttpResponse(f'Error: {str(e)}')
+
+        else:
+            Hotel_income.objects.create(
+                hotel = booking.hotel,
+                total_bookings= 1 ,
+                pending_payment = amount_paid,
+                )
+
+        
 
     except razorpay.errors.BadRequestError as e:
         return HttpResponse(f'Error: {str(e)}')

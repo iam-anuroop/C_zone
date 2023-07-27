@@ -13,13 +13,13 @@
           <a class="nav-link" href="{% url 'home' %}">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Link</a>
+          <a class="nav-link" href="{% url 'rooms' %}">Rooms</a>
         </li>
         <li class="nav-item dropdown">
             <a class="nav-link" href="#">Enabled</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Disabled</a>
+          <a class="nav-link" href="#">Okay</a>
         </li>
       </ul>
       <form class="form-inline my-2 my-lg-0" action='{% url 'search' %}'>
@@ -89,9 +89,8 @@
     
     <div id="mySidepanel" class="sidepanel">
       <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
-      <a href="">Profile</a>
-      <a href="#">Services</a>
-      <a href="#">Clients</a>
+      <a href="{% url 'userprofile' %}">Profile</a>
+      <a href="{% url 'yourbookings' %}">Your bookings</a>
       <a href="#">Contact</a>
       <a href="{% url 'hotellogin' %}">Hotel</a>
     </div>
