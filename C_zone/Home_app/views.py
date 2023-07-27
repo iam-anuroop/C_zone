@@ -1,6 +1,8 @@
 from django.shortcuts import render , redirect 
 from Hotel_manage.models import HotelDetails , Roomtype
 from django.db.models import Q
+from datetime import date
+from Hotel_manage.models import BookingDetails
 
 
 def home(request):
@@ -28,18 +30,30 @@ def Searchotel(request):
 def Rooms_view(request):
 
     list_rooms = Roomtype.objects.all()
+    today_date = date.today()
 
-    return render(request,'pages/rooms.html',{'rooms':list_rooms})
+    booked_room_ids = BookingDetails.objects.filter(check_out_date__gt = today_date,is_paid = True).values_list("room_type_id",flat=True)
+
+    context ={
+        'rooms':list_rooms,
+        "booked_room_ids":list(booked_room_ids),
+        }
+
+    return render(request,'pages/rooms.html',context)
 
 
 
 def Filter_room(request):
     price_filter = request.GET.get('price_filter')
+    list_rooms = Roomtype.objects.all()
+
+    today_date = date.today()
+    booked_room_ids = BookingDetails.objects.filter(check_out_date__gt = today_date,is_paid = True).values_list("room_type_id",flat=True)
+
     if price_filter:
         min_price, max_price = price_filter.split('-')
         list_rooms = Roomtype.objects.filter(price__gte=min_price,price__lte=max_price)
-
-    return render(request,'pages/rooms.html',{'rooms':list_rooms})
+    return render(request,'pages/rooms.html',{'rooms':list_rooms,'booked_room_ids':booked_room_ids})
     
 
 # Create your views here.

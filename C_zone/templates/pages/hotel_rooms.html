@@ -12,11 +12,15 @@
           <h5 class="card-title">{{ room.roomtype }}</h5>
           <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
           <h3>{{ room.price }}</h3>
-          <a href="{% url 'hotelbook' hotel_id=hotel.id room_id=room.id %}" class="btn btn-primary">Book</a>
+          {% if room.id in booked_room_ids %}
+          <a href="" class="btn btn-success">Reserved</a>
+          {% else %}
+            <a href="{% url 'hotelbook' hotel_id=room.hotel_id.id room_id=room.id %}" class="btn btn-primary">Book</a>
+          {% endif%}
         </div>
       </div>
 {% endfor %}
-</div>
+</div> 
 
 
 

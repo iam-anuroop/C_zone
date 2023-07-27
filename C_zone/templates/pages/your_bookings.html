@@ -26,13 +26,26 @@
         <td>{{book.room_type.roomtype}}</td>
         <td>{{book.room_type.price}}</td>
         <td class="image-cell"><img class='image' src="{{MEDIA_URL}}{{book.room_type.photo.url}}" alt="Profile Image"></td>
-        <td><a href='{% url 'payment' book.id book.room_type.id %}' class='btn btn-success'>Book now</a></td>
+        <td>
+          {% if book.room_type.id in booked_room_ids %}
+          <a href='{% url 'payment' book.id book.room_type.id %}' class='btn btn-success'>Book now</a>
+          {% else %}
+          <a href='' class='btn btn-success'>NOt avilable</a>
+          {% endif %}
+        </td>
       </tr>
 {% endfor %}
 
     </tbody>
   </table>
 
+
+  {% for book in booking %}
+
+  <h1>{{book.hotel.hotel_name}}</h1>
+  <a href ='{% url 'invoice' book.id %}' class='btn btn-success'>bownload invoice</a>
+
+  {% endfor %}
   
 
   <style>

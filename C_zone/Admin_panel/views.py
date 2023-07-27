@@ -5,6 +5,7 @@ from Admin_panel.models import Hotel_income
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.contrib import messages
+from datetime import date
 
 # from
 
@@ -101,7 +102,6 @@ def Admin_user_view(request):
 
 
 def Admin_hotel_payment_view(request):
-
     if request.user.is_superuser:
 
         list_hotels = Hotel_income.objects.all()

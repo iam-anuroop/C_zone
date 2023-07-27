@@ -12,5 +12,6 @@ urlpatterns = [
     path('userprofile/',views.Profileupdate,name='userprofile'),
     path('userdelete/',views.Userdelete,name='userdelete'),
     path('yourbookings/',views.Your_bookings,name='yourbookings'),
+    path('invoice/<int:booking_id>/',views.invoice_view,name='invoice'),
 
     ]

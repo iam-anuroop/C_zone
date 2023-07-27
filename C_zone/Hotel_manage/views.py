@@ -16,6 +16,7 @@ from django.core.mail import EmailMessage
 import os
 import razorpay
 from datetime import date
+from django.db.models import Subquery
 # Create your views here.
 
 
@@ -218,6 +219,7 @@ def Roomtype_view(request):
         if form.is_valid():
             room = form.save(commit=False)
             room.hotel_id = hotel
+            room.check_out_date = date.today()
             room.save()
             messages.success(request, 'Room type added successfully.')
             return redirect('roomtypeupdate')
@@ -236,9 +238,13 @@ def Roomtype_view(request):
 def Hotel_rooms_view(request,hotel_id):
     hotel = get_object_or_404(HotelDetails, id=hotel_id)
     rooms = Roomtype.objects.filter(hotel_id=hotel_id)
-    print(hotel)
-    print(rooms)
-    return render(request,'pages/hotel_rooms.html',{'rooms':rooms , 'hotel':hotel})
+
+    today_date = date.today()
+
+    booked_room_ids = BookingDetails.objects.filter(check_out_date__gt = today_date,is_paid = True).values_list("room_type_id",flat=True)
+
+
+    return render(request,'pages/hotel_rooms.html',{'rooms':rooms , 'hotel':hotel ,'booked_room_ids':booked_room_ids})
 
 
 
@@ -284,7 +290,7 @@ def Payment_view (request,booking_id=0,room_id=0):
 
 
     grand_total = 0
-    total = booking.room_count*room.price
+    total = room.price
     
     tax = (2 * total)/100
     grand_total = total + tax
@@ -328,11 +334,16 @@ def success(request):
             razor_payment_id=razorpay_payment_id,
             user=booking.user,  # Assuming the booking has a ForeignKey to the user
             hotel=booking.hotel,
+            booking_id = booking.id,
             amount_paid=amount_paid,
             razor_pay_status=razor_pay_status
         )
         booking.is_paid = True
         booking.save()
+
+        room = Roomtype.objects.get(id = room_id)
+        room.check_out_date = booking.check_out_date
+        room.save()
 
         if Hotel_income.objects.filter(hotel=booking.hotel).exists():
             try:

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect ,get_object_or_404 ,HttpResponse 
 from .registration_form import UserRegistrationForm
 from .models import UserDetails
-from Hotel_manage.models import BookingDetails
+from Hotel_manage.models import BookingDetails , PaymentDetails
 from django.contrib import messages
 import re
 from django.contrib.sites.shortcuts import get_current_site
@@ -11,6 +11,7 @@ from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 from django.contrib.auth import authenticate, login,logout
+from datetime import date
 
 # for invoice download 
 from io import BytesIO
@@ -204,48 +205,45 @@ def resetpasswordorusername(request, uidb64, token):
 def Your_bookings(request):
 
     your_book = BookingDetails.objects.filter(user = request.user,is_paid =False)
+    booking = BookingDetails.objects.filter(user = request.user,is_paid =True)
 
-    return render(request,'pages/your_bookings.html',{'books':your_book})
+    today_date = date.today()
+    booked_room_ids = BookingDetails.objects.filter(check_out_date__gt = today_date,is_paid = True).values_list("room_type_id",flat=True)
+
+
+    return render(request,'pages/your_bookings.html',{'books':your_book,'booking':booking, 'booked_room_ids':booked_room_ids})
 
 
 
 
-# # invoice data generator
+# invoice data generator
 # def generate_invoice_data(booking):
-#     return
+#     hi='hi'
+#     return {'hi':hi}
 
+# invoice download
+def invoice_view(request, booking_id):
+    booking = get_object_or_404(BookingDetails, id=booking_id)
+    # invoice_data = generate_invoice_data(booking)
+    temp_data = get_object_or_404(PaymentDetails,booking=booking)
 
-# # invoice download option for payed bookings 
-# def invoice_view(request,booking_id):
+    template = get_template('invoice/invoice.html')
+    context = {'data': booking,'amount':temp_data.amount_paid}
+    rendered_template = template.render(context)
 
-#     booking = get_object_or_404(BookingDetails,id = booking_id)
-#     invoice_data = generate_invoice_data(booking)
+    response = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(rendered_template.encode('UTF-8')), response)
 
+    if not pdf.err:
+        # Set the response content type as 'application/pdf'
+        response = HttpResponse(response.getvalue(), content_type='application/pdf')
 
-#     template = get_template('invoice/invoice.html')
-#     context = {'invoice_data': invoice_data}
-#     rendered_template = template.render(context)
-
-#     response = BytesIO()
-#     pdf = pisa.pisaDocument(BytesIO(rendered_template.encode('UTF-8')), response)  
-#     filename = 'c_zone invoice{booking.id}}'
-
-
-#     try:
-#         with open(str(settings.BASE_DIR)+f"invoice_location/{filename}.pdf", 'wb+') as 
-#         pdf = pisa.pisaDocument(BytesIO(rendered_template.))
-
-#     except:
-#         return
-
-#     response = HttpResponse(content_type='application/pdf')
-#     response['Content-Disposition'] = f'attachment; filename="invoice_{booking_id}.pdf"'
-
-#     # response.write(pdf_data)
-
-#     return response
-
-
+        # Set the Content-Disposition header to force the browser to download the file
+        response['Content-Disposition'] = f'attachment; filename="c_zone_invoice_{booking.id}.pdf"'
+        return response
+    else:
+        # Handle the case when there is an error while generating the PDF
+        return HttpResponse('Error generating PDF', status=500)
 
 
 

@@ -1,3 +1,4 @@
+from datetime import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from User_manage.models import UserDetails
@@ -64,6 +65,10 @@ class Hotelowner(models.Model):
     id_card = models.ImageField(upload_to='hotelowner_idcard/')
 
 
+    def __str__(self):
+        return self.owner_name
+
+
 
 # hotel booking details of user 
 class Roomtype(models.Model):
@@ -75,23 +80,23 @@ class Roomtype(models.Model):
     photo = models.ImageField(upload_to='room_photos/')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # check_out_date = models.DateField(null=True)
+
+
+
 
     def __str__(self):
         return self.roomtype
-
-
-# payment ...details 
-class PaymentDetails(models.Model):
-    razor_payment_id = models.CharField(max_length=255)
-    user = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
-    hotel = models.ForeignKey(HotelDetails, on_delete=models.CASCADE)
-    amount_paid = models.CharField(max_length=100) # this is the total amount
-    razor_pay_status = models.CharField(max_length=100)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-
-    def __str__(self):
-        return str(self.razor_payment_id)
+    
+    # def check_date(self):
+    #     today = timezone.now().date()
+    #     if self.check_out_date is not None:
+    #         if self.check_out_date > today:
+    #             self.is_reserved = False
+    #         else:
+    #             self.is_reserved = True
+    #     self.save()
+    #     return self.check_out_date > today
 
 
 
@@ -104,7 +109,6 @@ class BookingDetails(models.Model):
     check_in_date = models.DateField()
     check_out_date = models.DateField()
     room_type = models.ForeignKey(Roomtype,on_delete=models.SET_NULL,null=True)
-    room_count = models.IntegerField()
     num_of_guests = models.IntegerField()
     special_requests = models.TextField()
     name = models.CharField(max_length=100)
@@ -118,5 +122,32 @@ class BookingDetails(models.Model):
         return str(self.booking_id)
 
 
+
+# payment ...details 
+class PaymentDetails(models.Model):
+    razor_payment_id = models.CharField(max_length=255)
+    user = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
+    hotel = models.ForeignKey(HotelDetails, on_delete=models.CASCADE)
+    booking = models.ForeignKey(BookingDetails,on_delete=models.CASCADE)
+    amount_paid = models.CharField(max_length=100) # this is the total amount
+    razor_pay_status = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return str(self.razor_payment_id)
+
+
+
+
+
+# review details
+class ReviewDetails(models.Model):
+    hotel = models.ForeignKey(HotelDetails,on_delete=models.CASCADE)
+    user = models.ForeignKey(UserDetails,on_delete=models.CASCADE)
+    review = models.TextField()
+
+    def __str_(self):
+        return self.user.fullname
 
 
