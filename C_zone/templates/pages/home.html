@@ -44,7 +44,7 @@
       <p class="card-text">{{hotel.city}}</p>
       <p class="card-text">{{hotel.district}}</p>
       <p>Average Rating: {{ hotel.avg_rating }}</p> <!-- Display the average rating -->
-      <a href="{% url 'hotelrooms' hotel.id %}" class="btn btn-primary">Book {{ hotel.hotel_name }}</a>
+      <a href="{% url 'hotelrooms' hotel.id %}" class="btn btn-primary">Book now</a>
     </div>
   </div>
 {% endfor %}

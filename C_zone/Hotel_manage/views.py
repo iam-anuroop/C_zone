@@ -30,38 +30,44 @@ def Hotelregister(request):
             form = HotelRegistrationForm(request.POST,request.FILES)
             password = request.POST.get('password')
             email = request.POST.get('hotel_email')
+            confirm_password = request.POST.get('confirmpassword')
+            print(confirm_password)
             if form.is_valid():
-                hotel = form.save(commit=False)
-                user = request.user
-                user.is_hoteluser = True
-                hotel.user_id = request.user
-                hotel.set_password(password)
-                user.save()
-                hotel.save()
-                request.session['hotel_id']=hotel.id
+                if password == confirm_password:
+                    hotel = form.save(commit=False)
+                    user = request.user
+                    user.is_hoteluser = True
+                    hotel.user_id = request.user
+                    hotel.set_password(password)
+                    user.save()
+                    hotel.save()
+                    request.session['hotel_id']=hotel.id
 
 
-                try:
-                    current_site = get_current_site(request)
-                    mail_subject = "Please activate your account"
-                    message = render_to_string("hotel_account/email_verify.html", {
-                        'user': request.user,
-                        # 'hotel':hotel,
-                        'domain': current_site.domain,
-                        'uid': urlsafe_base64_encode(force_bytes(hotel.pk)),
-                        'token': default_token_generator.make_token(hotel),
-                    })
-                    to_email = email
-                    send_mail = EmailMessage(mail_subject, message, to=[to_email])
-                    send_mail.send()
+                    try:
+                        current_site = get_current_site(request)
+                        mail_subject = "Please activate your account"
+                        message = render_to_string("hotel_account/email_verify.html", {
+                            'user': request.user,
+                            # 'hotel':hotel,
+                            'domain': current_site.domain,
+                            'uid': urlsafe_base64_encode(force_bytes(hotel.pk)),
+                            'token': default_token_generator.make_token(hotel),
+                        })
+                        to_email = email
+                        send_mail = EmailMessage(mail_subject, message, to=[to_email])
+                        send_mail.send()
+
+                        return redirect('hotelowner_reg')
+                    except Exception as e:
+                        messages.error(request, f"An error occurred during registration: {str(e)}")
+
+                    # logout(request) #making the user logout 
 
                     return redirect('hotelowner_reg')
-                except Exception as e:
-                    messages.error(request, f"An error occurred during registration: {str(e)}")
+                else:
+                    messages.error(request,'password not matching')
 
-                # logout(request) #making the user logout 
-    
-                return redirect('hotelowner_reg')
             else:
                 print(form.errors)
                 messages.error(request,'invalid form')
@@ -127,11 +133,12 @@ def activatehotel(request, uidb64, token):
 @login_required(login_url='login')
 def Hotellogin(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        email = request.POST.get('email').strip()
         password = request.POST.get('password')
         print(email, password)
         try:
             hotel = HotelDetails.objects.get(hotel_email=email)
+            print(hotel)
             if check_password(password, hotel.password) and hotel.is_active==True and hotel.is_registerd ==True:  # Manually check the password
                 print('Password matched!')
                 hotel.is_logined = True
@@ -247,12 +254,16 @@ def Hotel_rooms_view(request,hotel_id):
             review = request.POST.get('review')  # Get the review from the form
             rating = request.POST.get('rating-value')
             print(review,rating)
-            ReviewDetails.objects.create(
-                hotel = hotel,
-                user = request.user,
-                comment = review,
-                rating = rating
-            )
+            if rating == "" or review == "":
+                print('hiiii')
+                messages.error(request,'please provide rating and review')
+            else:
+                ReviewDetails.objects.create(
+                    hotel = hotel,
+                    user = request.user,
+                    comment = review,
+                    rating = rating
+                )
             new_avg_rating = ReviewDetails.objects.filter(hotel=hotel).aggregate(Avg('rating'))['rating__avg']
             hotel.avg_rating = new_avg_rating
             hotel.save()
@@ -283,11 +294,13 @@ def hotel_book(request,hotel_id,room_id):
     room = get_object_or_404(Roomtype, id=room_id)
     print(hotel,room)
     if request.method == 'POST':
+        capacity=request.POST.get('num_of_guests')
         form =Bookingform(request.POST,request.FILES)
 
+        if int(capacity) > int(room.capacity):
+            messages.error(request,'Guests are more than capacity')
         # Save the booking data to the database
-        
-        if form.is_valid():
+        elif form.is_valid():
             booking = form.save(commit=False)
             booking.hotel = hotel
             booking.room_type = room
@@ -299,7 +312,7 @@ def hotel_book(request,hotel_id,room_id):
                 messages.error(request,'Choose a proper date')
             
         else:
-            print(form.errors,'jjjjjjjjjjjjjjjjj')
+            print(form.errors)
         # booking.save()
 
     # form = Bookingform()
@@ -329,6 +342,8 @@ def Payment_view (request,booking_id=0,room_id=0):
    
 
     context = {
+        'room':room,
+        'booking':booking,
         'grand_total':grand_total,
         'payment':payment,
         'booking_id':booking_id,
@@ -368,8 +383,18 @@ def success(request):
         booking.is_paid = True
         booking.save()
 
+        mail_subject = "Your booking is confirmed"
+        message = render_to_string("pages/booking_success_email.html",{
+            'user':booking.user,
+            'booking':booking,
+            'hotel':booking.hotel,
+        })
+        to_email = booking.user.email
+        send_mail = EmailMessage(mail_subject, message, to=[to_email])
+        send_mail.send()
+
         room = Roomtype.objects.get(id = room_id)
-        # room.check_out_date = booking.check_out_date
+        room.check_out_date = booking.check_out_date
         room.save()
 
         if Hotel_income.objects.filter(hotel=booking.hotel).exists():
@@ -395,7 +420,7 @@ def success(request):
 
 
     
-    return HttpResponse('payment success')
+    return render(request,'pages/success_payment.html')
 
 
     # hotel_name = form.cleaned_data['hotel_name']

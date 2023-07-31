@@ -3,10 +3,10 @@
 
 {% include 'includes/navbar.html' %}
  
-<h1>Hotel Booking {{hotel.hotel_name}}</h1>
+<h3 class='mt-5 ml-5'>{{hotel.hotel_name}}</h3>
 
 
-<div class="card">
+<div class="card ml-5 mr-5 ">
 	<div class="row no-gutters">
 		<aside class="col-md-6">
 <article class="gallery-wrap"> 
@@ -22,12 +22,9 @@
 <h2 class="title">{{room.roomtype}}</h2>
 
 <div class="mb-3"> 
-	<var class="price h4">${{room.price}}</var> 
+	<var class="price h4">price :{{room.price}}</var> 
+	<h5>capacity :{{room.capacity}}</h5> 
 </div> 
-
-<p>Virgil Abloh’s Off-White is a streetwear-inspired collection that continues to break away from the conventions of mainstream fashion. Made in Italy, these black and brown Odsy-1000 low-top sneakers.</p>
-
-
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <label for="check-in-date">Check-in Date:</label>

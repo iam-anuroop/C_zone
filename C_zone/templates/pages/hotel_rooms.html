@@ -25,6 +25,16 @@
 </div> 
 </div> 
 <div class = 'review-box'>
+  <div class="form-group col-md-6">
+    {% for message in messages %}
+        {% if message.tags == "success" %}
+            <div class="text-success alert alert-success font-weight-bold" role="alert" style="width:100px , " id="message-alert">{{message}}</div>
+        {% endif %}
+        {% if message.tags == "error" %}
+            <div class="text-danger alert alert-danger font-weight-bold" role="alert" id="message-alert">{{message}}</div>
+        {% endif %}
+    {% endfor %}
+</div>
   {% if is_user_booked %}
     <h3 class="review_heading">Leave a Review</h3>
     <form method="post">
@@ -207,6 +217,16 @@
       ratingValue.value = selectedRating;
     }
   });
+
+
+  setTimeout(function() {
+    var messageAlerts = document.querySelectorAll('#message-alert');
+    if (messageAlerts) {
+      messageAlerts.forEach(function(alert) {
+        alert.style.display = 'none';
+      });
+    }
+  }, 8000);
 </script>
 
 
