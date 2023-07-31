@@ -12,19 +12,20 @@
         <!-- Add more price ranges as needed -->
       </select>
     </div>
-    <button type="submit" class="btn btn-primary">Search</button>
+    <button type="submit" class="btn_filter btn btn-primary">Filter</button>
 </form>
 
 
-<div class='Container'>
+<div class='rooms_main_div Container'>
 {% for room in rooms %}
 
     <div class="card d-inline-flex shadow p-2 m-3 bg-white rounded" style="width: 18rem;">
         <img class="card-img-top" src="{{ MEDIA_URL }}{{ room.photo.url }}" alt="Card image cap">
         <div class="card-body">
           <h5 class="card-title">{{ room.roomtype }}</h5>
-          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-          <h3>{{ room.price }}</h3>
+          <h5 class="card-title">capacity: {{ room.capacity }}</h5>
+          <p class="card-text">{{room.description}}</p>
+          <h5>price:{{ room.price }}</h5>
           {% if room.id in booked_room_ids %}
           <a href="" class="btn btn-success">Reserved</a>
           {% else %}
@@ -37,11 +38,34 @@
 </div>
 
 <style>
+  .btn_filter{
+    background: transparent;
+    color: cyan;
+    border: 1px solid cyan;
+  }
+  .rooms_main_div{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content: space-between;
+    margin: 0 auto;
+    max-width: 1400px;
+    padding: 20px;
+  }
     .filterform{
         display:flex;
+        position: fixed;
+        z-index: 1;
+        right: 180px;
+        top: 25px;
     }
     .filter{
         width:100px;
+    }
+    .card-img-top{
+      width: 200px; /* Set a fixed width for the image */
+      height: 150px; /* Set a fixed height for the image */
+      object-fit: cover; /* Ensure the image retains its aspect ratio while covering the entire container */
+      border-radius: 5px; /* Optionally add border-radius to give the image rounded corners */
     }
 </style>
 

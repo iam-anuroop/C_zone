@@ -30,6 +30,7 @@ class HotelDetails(AbstractBaseUser):
     city = models.CharField(max_length=255)
     pin_code = models.CharField(max_length=10)
     hotel_profile = models.ImageField(upload_to='hotel_profile/')
+    avg_rating = models.DecimalField(max_digits=3, decimal_places=1,null=True,default=0)
 
 
 
@@ -80,7 +81,7 @@ class Roomtype(models.Model):
     photo = models.ImageField(upload_to='room_photos/')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    # check_out_date = models.DateField(null=True)
+    check_out_date = models.DateField(null=True, blank=True)
 
 
 
@@ -143,11 +144,13 @@ class PaymentDetails(models.Model):
 
 # review details
 class ReviewDetails(models.Model):
-    hotel = models.ForeignKey(HotelDetails,on_delete=models.CASCADE)
-    user = models.ForeignKey(UserDetails,on_delete=models.CASCADE)
-    review = models.TextField()
+    hotel = models.ForeignKey(HotelDetails, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
+    rating = models.DecimalField(max_digits=3, decimal_places=1)  # Rating out of 5, e.g., 4.5
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str_(self):
+    def __str__(self):
         return self.user.fullname
 
 

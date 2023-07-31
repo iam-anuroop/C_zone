@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect,get_object_or_404,HttpResponse
 from .Hotel_form import HotelRegistrationForm  , Roomtypeform ,Bookingform,Hotelownerform
 from django.contrib.auth.decorators import login_required
 from User_manage.models import UserDetails
-from .models import HotelDetails , Roomtype ,BookingDetails ,PaymentDetails
+from .models import HotelDetails , Roomtype ,BookingDetails ,PaymentDetails,ReviewDetails
 from Admin_panel.models import Hotel_income
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -16,7 +16,7 @@ from django.core.mail import EmailMessage
 import os
 import razorpay
 from datetime import date
-from django.db.models import Subquery
+from django.db.models import Count,Avg
 # Create your views here.
 
 
@@ -242,9 +242,36 @@ def Hotel_rooms_view(request,hotel_id):
     today_date = date.today()
 
     booked_room_ids = BookingDetails.objects.filter(check_out_date__gt = today_date,is_paid = True).values_list("room_type_id",flat=True)
+    if request.method == 'POST':
+        try:
+            review = request.POST.get('review')  # Get the review from the form
+            rating = request.POST.get('rating-value')
+            print(review,rating)
+            ReviewDetails.objects.create(
+                hotel = hotel,
+                user = request.user,
+                comment = review,
+                rating = rating
+            )
+            new_avg_rating = ReviewDetails.objects.filter(hotel=hotel).aggregate(Avg('rating'))['rating__avg']
+            hotel.avg_rating = new_avg_rating
+            hotel.save()
+        except Exception as e:
+            print(f'Error: {str(e)}')
+            
 
+    is_user_booked = BookingDetails.objects.filter(hotel=hotel, user=request.user).exists()
+    hotel_review = ReviewDetails.objects.filter(hotel=hotel)
 
-    return render(request,'pages/hotel_rooms.html',{'rooms':rooms , 'hotel':hotel ,'booked_room_ids':booked_room_ids})
+    context = {
+        'rooms':rooms ,
+          'hotel':hotel ,
+          'booked_room_ids':booked_room_ids,
+          'is_user_booked':is_user_booked,
+          'hotel_review':hotel_review,
+          }
+
+    return render(request,'pages/hotel_rooms.html',context)
 
 
 
@@ -342,7 +369,7 @@ def success(request):
         booking.save()
 
         room = Roomtype.objects.get(id = room_id)
-        room.check_out_date = booking.check_out_date
+        # room.check_out_date = booking.check_out_date
         room.save()
 
         if Hotel_income.objects.filter(hotel=booking.hotel).exists():

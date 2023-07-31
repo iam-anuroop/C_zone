@@ -5,7 +5,7 @@ from .models import HotelDetails , Roomtype , BookingDetails , Hotelowner
 class HotelRegistrationForm(forms.ModelForm):
     class Meta:
         model = HotelDetails
-        exclude = ['user_id','is_active','is_hoteluser']    # Exclude user field as it will be set automatically
+        exclude = ['user_id','avg_rating','is_hoteluser']    # Exclude user field as it will be set automatically
 
 class Hotelownerform(forms.ModelForm):
     class Meta:

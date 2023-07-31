@@ -1,5 +1,5 @@
 from django.shortcuts import render , redirect 
-from Hotel_manage.models import HotelDetails , Roomtype
+from Hotel_manage.models import HotelDetails , Roomtype ,ReviewDetails
 from django.db.models import Q
 from datetime import date
 from Hotel_manage.models import BookingDetails
